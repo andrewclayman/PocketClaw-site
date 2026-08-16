@@ -1,0 +1,9 @@
+{
+  "name": "xanadu-okapi-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Licensing backend for Xanadu Okapi: Stripe checkout + entitlement check. No database — Stripe is the source of truth for who's paid.",
+  "dependencies": {
+    "stripe": "^17.4.0"
+  }
+}

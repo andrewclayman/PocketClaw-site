@@ -1,0 +1,6 @@
+# Vercel CLI defaults to respecting the repo's .gitignore, which deliberately excludes
+# large binaries (*.apk, *.mp4) from git. Those same files are real deployment assets
+# here (the site's download link and embedded video), so this file overrides that for
+# THIS deploy only — keep it in sync if .gitignore's ignore patterns change.
+!assets/*.apk
+!assets/*.mp4

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>You're in — Xanadu Okapi</title>
+<style>
+  :root{
+    --ink:#070E0A;--surface:#16211A;--xan:#2F8F6B;--xan-hi:#9BDDBF;--orb-hi:#B8ECD4;--orb-deep:#0D3122;
+    --bone:#EFF3EB;--smoke:#9CAAA0;--line:rgba(255,255,255,.09);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:radial-gradient(1200px 700px at 50% -10%,#1C3A2C 0%,var(--ink) 60%);
+    color:var(--bone);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  }
+  .card{max-width:480px;width:100%;text-align:center}
+  .orb{width:100px;height:100px;border-radius:50%;margin:0 auto 24px;
+    background:radial-gradient(circle at 34% 28%,var(--orb-hi),var(--xan) 46%,var(--orb-deep));
+    box-shadow:0 0 70px rgba(47,143,107,.4)}
+  h1{font-size:32px;margin-bottom:12px;letter-spacing:-.02em}
+  p{color:var(--smoke);margin-bottom:24px;line-height:1.5}
+  .tokenBox{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;
+    font-family:ui-monospace,Consolas,monospace;font-size:13px;word-break:break-all;color:var(--xan-hi);
+    margin-bottom:16px;cursor:pointer;
+  }
+  .copyHint{font-size:12.5px;color:var(--smoke);margin-bottom:32px}
+  .btn{display:inline-flex;padding:13px 26px;border-radius:999px;background:linear-gradient(135deg,var(--xan-hi),var(--xan));
+    color:#0C1410;font-weight:700;text-decoration:none;font-size:15px}
+  .err{color:#E08A8A}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="orb"></div>
+  <div id="content">
+    <h1>Confirming your subscription…</h1>
+    <p>Hang tight, this only takes a second.</p>
+  </div>
+</div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const sessionId = params.get('session_id');
+  const content = document.getElementById('content');
+
+  if (!sessionId) {
+    content.innerHTML = '<h1>Something went missing</h1><p class="err">No session id in the link. If you just paid, check your email — Stripe also sends a receipt with a link back here.</p>';
+  } else {
+    fetch('/api/session-license?session_id=' + encodeURIComponent(sessionId))
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        content.innerHTML = `
+          <h1>You're in 🎉</h1>
+          <p>Copy this license key and paste it into Xanadu Okapi when you open the app.</p>
+          <div class="tokenBox" id="tok">${data.token}</div>
+          <p class="copyHint">Tap the box to copy${data.email ? ' — also emailed to ' + data.email : ''}.</p>
+          <a class="btn" href="/#download">Download the app</a>
+        `;
+        document.getElementById('tok').onclick = () => {
+          navigator.clipboard.writeText(data.token);
+          document.getElementById('tok').style.opacity = .6;
+          setTimeout(() => document.getElementById('tok').style.opacity = 1, 200);
+        };
+      })
+      .catch(e => {
+        content.innerHTML = `<h1>Couldn't confirm that</h1><p class="err">${e.message}</p><p>If you were charged, email hello@xanaduokapi.com and we'll sort it out.</p>`;
+      });
+  }
+</script>
+</body>
+</html>

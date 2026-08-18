@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>You're in — Xanadu Okapi</title>
+<title>You're in — Xanadu</title>
 <style>
   :root{
-    --ink:#070E0A;--surface:#16211A;--xan:#2F8F6B;--xan-hi:#9BDDBF;--orb-hi:#B8ECD4;--orb-deep:#0D3122;
-    --bone:#EFF3EB;--smoke:#9CAAA0;--line:rgba(255,255,255,.09);
+    --ink:#0B0D0C;--surface:#171B19;--xan:#55D3A4;--xan-hi:#9BEFCB;--orb-hi:#BFF3DC;--orb-deep:#0B2A20;
+    --bone:#F0F2F0;--smoke:#929A95;--line:rgba(255,255,255,.09);
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{
-    background:radial-gradient(1200px 700px at 50% -10%,#1C3A2C 0%,var(--ink) 60%);
+    background:radial-gradient(1200px 700px at 50% -10%,#12241C 0%,var(--ink) 60%);
     color:var(--bone);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
   }
@@ -54,7 +54,7 @@
         if (data.error) throw new Error(data.error);
         content.innerHTML = `
           <h1>You're in 🎉</h1>
-          <p>Copy this license key and paste it into Xanadu Okapi when you open the app.</p>
+          <p>Copy this license key and paste it into Xanadu when you open the app.</p>
           <div class="tokenBox" id="tok">${data.token}</div>
           <p class="copyHint">Tap the box to copy${data.email ? ' — also emailed to ' + data.email : ''}.</p>
           <a class="btn" href="/#download">Download the app</a>

@@ -3,3 +3,6 @@
 .vercel
 node_modules/
 npm-debug.log*
+
+.vercel
+.env*

@@ -5,7 +5,7 @@ const Stripe = require('stripe');
 module.exports = async (req, res) => {
   try {
     const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-    const site = process.env.SITE_URL || 'https://xanaduokapi.com';
+    const site = process.env.SITE_URL || 'https://xanadulynx.com';
 
     const params = {
       mode: 'subscription',

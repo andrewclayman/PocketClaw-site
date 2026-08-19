@@ -46,7 +46,7 @@
   const content = document.getElementById('content');
 
   if (!sessionId) {
-    content.innerHTML = '<h1>Something went missing</h1><p class="err">No session id in the link. If you just paid, check your email — Stripe also sends a receipt with a link back here.</p>';
+    content.innerHTML = '<h1>Something went missing</h1><p class="err">No session id in the link. If you just paid, email hello@xanadulynx.com and we\'ll sort it out.</p>';
   } else {
     fetch('/api/session-license?session_id=' + encodeURIComponent(sessionId))
       .then(r => r.json())
@@ -56,7 +56,7 @@
           <h1>You're in 🎉</h1>
           <p>This is your license key — you'll paste it into the app in a minute. Tap it to copy.</p>
           <div class="tokenBox" id="tok">${data.token}</div>
-          <p class="copyHint">Tap the box to copy${data.email ? ' — also emailed to ' + data.email : ''}.</p>
+          <p class="copyHint">Tap the box to copy, and keep it somewhere safe — this page is the only place it's shown.</p>
           <a class="btn" href="/#download">Next: install the app →</a>
           <p class="copyHint" style="margin-top:14px">2 minutes, on your Android phone — every step is pictured.</p>
         `;

@@ -1,4 +1,4 @@
-// GET /api/checkout — starts a Stripe Checkout session for the Xanadu Okapi
+// GET /api/checkout — starts a Stripe Checkout session for the Xanadu
 // subscription (intro coupon applied automatically) and redirects to it.
 const Stripe = require('stripe');
 

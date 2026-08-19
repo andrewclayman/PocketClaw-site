@@ -21,11 +21,11 @@ async function main() {
   const stripe = Stripe(key);
 
   const products = await stripe.products.list({ limit: 100 });
-  let product = products.data.find(p => p.name === 'Xanadu Okapi');
+  let product = products.data.find(p => p.name === 'Xanadu');
   if (!product) {
     product = await stripe.products.create({
-      name: 'Xanadu Okapi',
-      description: 'Voice-first AI that runs your phone.',
+      name: 'Xanadu',
+      description: 'The AI that runs your phone.',
     });
     console.log('Created product:', product.id);
   } else {

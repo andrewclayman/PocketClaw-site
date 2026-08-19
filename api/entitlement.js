@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const subs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 1 });
     const active = subs.data.length > 0;
     // Feature flags ride along with entitlement. Flip CALLS_ENABLED=false in the
-    // Vercel env to switch Okapi Calls off for everyone with no app update; later,
+    // Vercel env to switch Xanadu Calls off for everyone with no app update; later,
     // tier-gate by checking which Stripe price the subscription is on.
     const features = { calls: active && process.env.CALLS_ENABLED !== 'false' };
     res.status(200).json({ active, features });

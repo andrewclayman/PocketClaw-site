@@ -1,4 +1,4 @@
-# Xanadu Okapi — site + licensing backend
+# Xanadu — site + licensing backend
 
 Static marketing site (`index.html`, `success.html`, `assets/`) plus three tiny
 serverless functions (`api/`). No database — Stripe is the source of truth for
@@ -35,11 +35,11 @@ before ever switching to a live key. Switching to `sk_live_...` starts charging
 real cards; that's the one step in this whole flow I'd want a human eyeball on
 before it happens, not something to run through unattended.
 
-## If the domain isn't `xanaduokapi.com` yet
+## If the domain isn't `xanadulynx.com` yet
 
 Two places hardcode that domain and need updating to match whatever you
 actually deploy to (a custom domain, or the default `*.vercel.app` one):
 - `SITE_URL` env var above
 - `LICENSE_API_BASE` in `app/src/main/java/com/pocketclaw/license/LicenseGate.kt`
   in the Android project — after changing it, rebuild the release APK
-  (`.\gradlew.bat assembleRelease`) and re-copy it into `backend/assets/xanadu-okapi.apk`.
+  (`.\gradlew.bat assembleRelease`) and re-copy it into `backend/assets/xanadu.apk`.

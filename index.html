@@ -125,31 +125,50 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);ba
 .tab.on .bar{display:block}
 .tab .bar i{display:block;height:100%;background:var(--green);width:0%}
 
-/* ---------- setup ---------- */
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:48px}
+/* ---------- get it: buy → install → first run ---------- */
+.phase{margin-top:70px}
+.phase-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.phase-head .pno{width:40px;height:40px;border-radius:50%;background:var(--green);color:#08120D;font-family:var(--font-d);font-weight:700;font-size:18px;display:grid;place-items:center;flex-shrink:0}
+.phase-head h3{font-size:clamp(20px,2.8vw,27px)}
+.phase-sub{color:var(--muted);font-size:14.5px;margin-left:54px;max-width:640px}
+.phone-note{margin:16px 0 0 54px;display:inline-flex;gap:10px;align-items:center;background:rgba(85,211,164,.08);border:1px solid rgba(85,211,164,.35);color:var(--green-hi);font-size:14px;font-weight:500;padding:10px 16px;border-radius:12px}
+@media(max-width:700px){.phase-sub,.phone-note{margin-left:0}}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:18px;margin-top:34px}
 .step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;position:relative}
 .step .no{position:absolute;top:-14px;left:22px;background:var(--green);color:#08120D;font-family:var(--font-d);font-weight:700;font-size:13px;padding:4px 12px;border-radius:20px}
 .step h3{font-size:16px;margin:10px 0 8px}
 .step p{color:var(--muted);font-size:13.8px;margin-bottom:16px}
-.mini{height:150px;background:#0C0F0D;border:1px solid var(--line);border-radius:12px;position:relative;overflow:hidden;display:grid;place-items:center}
-/* step sims */
-.sim-dl{width:70%;text-align:center}
-.sim-dl .bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:10px}
-.sim-dl .bar i{display:block;height:100%;width:0;background:var(--green);animation:dl 3s ease-in-out infinite}
-.sim-dl span{font-size:11px;color:var(--muted)}
-@keyframes dl{0%{width:0}60%{width:100%}100%{width:100%}}
-.sim-key{width:78%}
+.step p b{color:var(--text);font-weight:600}
+.mini{height:172px;background:#0C0F0D;border:1px solid var(--line);border-radius:12px;position:relative;overflow:hidden;display:grid;place-items:center}
+/* android-style dialog mockups — the glowing button is the one to tap */
+.adlg{width:91%;background:#23272C;border-radius:16px;padding:14px 16px;text-align:left;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.adlg .t{font-weight:600;font-size:12.5px;color:#F1F3F4;margin-bottom:6px}
+.adlg p{color:#9AA0A6;font-size:11px;line-height:1.5;margin:0 0 12px}
+.adlg .btns{display:flex;justify-content:flex-end;gap:8px;font-size:12px;font-weight:600;color:#8AB4F8}
+.adlg .btns span{padding:6px 13px;border-radius:18px}
+.adlg .btns .go{background:rgba(138,180,248,.14);animation:tapGlow 1.6s ease-in-out infinite}
+@keyframes tapGlow{0%,100%{box-shadow:0 0 0 0 rgba(138,180,248,0)}50%{box-shadow:0 0 0 6px rgba(138,180,248,.20);background:rgba(138,180,248,.28)}}
+.dlbar{width:91%;background:#23272C;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;text-align:left}
+.dlbar .fico{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green-hi),var(--green));display:grid;place-items:center;color:#08120D;font-weight:700;font-size:9.5px;font-family:var(--font-d);flex-shrink:0}
+.dlbar .fn{flex:1;font-size:11.5px;color:#F1F3F4;min-width:0}
+.dlbar .fn small{display:block;color:#9AA0A6;font-size:10px}
+.dlbar .open{color:#8AB4F8;font-weight:600;font-size:12px;padding:6px 13px;border-radius:18px;background:rgba(138,180,248,.14);animation:tapGlow 1.6s ease-in-out infinite}
+.arow{width:91%;background:#23272C;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.arow .al{min-width:0}
+.arow span{font-size:11.5px;color:#F1F3F4}
+.arow small{display:block;color:#9AA0A6;font-size:10px;margin-top:2px}
+.tgl{width:40px;height:22px;border-radius:13px;background:#3C4043;position:relative;flex-shrink:0;animation:tglBg 3s infinite}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;animation:tglKnob 3s infinite}
+@keyframes tglBg{0%,30%{background:#3C4043}55%,100%{background:var(--green)}}
+@keyframes tglKnob{0%,30%{left:3px}55%,100%{left:21px}}
+/* first-run sims */
+.sim-key{width:82%}
 .sim-key .field{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--green-hi);font-family:monospace;white-space:nowrap;overflow:hidden}
 .sim-key .field i{font-style:normal;animation:typeKey 4s steps(22) infinite}
 .sim-key label{font-size:10.5px;color:var(--muted);display:block;margin-bottom:6px}
 @keyframes typeKey{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}
-.sim-tgl{display:flex;align-items:center;gap:12px}
-.sim-tgl span{font-size:12px;color:var(--text)}
-.tgl{width:44px;height:24px;border-radius:14px;background:#333;position:relative;animation:tglBg 3.4s infinite}
-.tgl::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;animation:tglKnob 3.4s infinite}
-@keyframes tglBg{0%,35%{background:#333}55%,100%{background:var(--green)}}
-@keyframes tglKnob{0%,35%{left:3px}55%,100%{left:23px}}
 .sim-talk{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#F4FFF9,#55D3A4 60%,#1B6B4E 96%);box-shadow:0 0 26px rgba(85,211,164,.6);animation:hotBreathe 2.6s ease-in-out infinite;display:grid;place-items:center}
+.step .btn{width:100%;justify-content:center;margin-bottom:16px}
 
 /* ---------- pricing ---------- */
 #pricing{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -163,10 +182,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);ba
 .price-card li::before{content:"✓";color:var(--green);font-weight:700}
 .byok{max-width:560px;margin:26px auto 0;color:var(--muted);font-size:13.5px;text-align:center}
 
-/* ---------- download / faq / footer ---------- */
-.dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:44px}
-@media(max-width:760px){.dl-grid{grid-template-columns:1fr}}
-.faq{margin-top:44px;display:grid;gap:12px}
+/* ---------- faq / footer ---------- */
+.faq{margin-top:70px;display:grid;gap:12px}
 .faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 22px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px}
 .faq p{color:var(--muted);font-size:14.5px;margin-top:10px}
@@ -189,7 +206,7 @@ footer .brand{justify-content:center;margin-bottom:12px}
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#usecases">Use cases</a>
-      <a href="#setup">Setup</a>
+      <a href="#setup">Install</a>
       <a href="#pricing">Pricing</a>
       <a href="#download" class="btn primary">Get Xanadu</a>
     </div>
@@ -276,38 +293,99 @@ footer .brand{justify-content:center;margin-bottom:12px}
   </div>
 </section>
 
-<!-- ================= SETUP ================= -->
+<!-- ================= GET IT: BUY → INSTALL → FIRST RUN ================= -->
 <section id="setup">
   <div class="wrap">
     <div class="reveal">
-      <div class="kicker">Setup</div>
-      <h2 class="h2">Running in four minutes.</h2>
-      <p class="sub">No account with us beyond your license. No cloud middleman. Here's the whole journey, visually:</p>
+      <div class="kicker">Get Xanadu</div>
+      <h2 class="h2">Buy it. Install it. Done in four minutes.</h2>
+      <p class="sub">Every screen you'll see along the way is pictured below — on each one, just tap the glowing button.</p>
     </div>
-    <div class="steps">
-      <div class="step reveal">
-        <span class="no">1</span>
-        <h3>Download & install</h3>
-        <p>Grab the APK below. Android will ask you to allow installs from your browser — that's normal for apps outside the Play Store.</p>
-        <div class="mini"><div class="sim-dl"><span>xanadu.apk</span><div class="bar"><i></i></div></div></div>
+
+    <!-- PHASE 1 · BUY -->
+    <div class="phase reveal">
+      <div class="phase-head"><span class="pno">1</span><h3>Buy — get your license key</h3></div>
+      <p class="phase-sub">One quick checkout. Your license key appears on screen immediately and is also emailed to you — you'll paste it into the app in a minute.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="no">1a</span>
+          <h3>Subscribe for $1</h3>
+          <p>Card, Google Pay or Apple Pay — takes about 30 seconds.</p>
+          <a href="/api/checkout" class="btn primary">Get my license — $1</a>
+          <div class="mini"><div class="adlg"><div class="t">Checkout</div><p>Xanadu — $1.00 for your first month</p><div class="btns"><span class="go">Pay</span></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">1b</span>
+          <h3>Copy your key</h3>
+          <p>It shows up right after payment <b>and</b> in your email inbox. Tap it once to copy — that's all you need from us.</p>
+          <div class="mini"><div class="sim-key"><label>Your license key</label><div class="field"><i>XAN-4F2K-••••-••••</i></div></div></div>
+        </div>
       </div>
-      <div class="step reveal">
-        <span class="no">2</span>
-        <h3>Add your AI key</h3>
-        <p>Pick your brain — Claude, GPT or Gemini — and paste your API key. It's stored only on your phone. Model choice? Leave it on Auto.</p>
-        <div class="mini"><div class="sim-key"><label>Anthropic API key</label><div class="field"><i>sk-ant-••••••••••••••••</i></div></div></div>
+    </div>
+
+    <!-- PHASE 2 · INSTALL -->
+    <div class="phase reveal" id="download">
+      <div class="phase-head"><span class="pno">2</span><h3>Install — on your phone</h3></div>
+      <p class="phase-sub">Xanadu installs straight from this site, no app store needed. Android will double-check that you meant to do it — that's normal for any app installed outside the Play Store, and it looks exactly like this:</p>
+      <div class="phone-note">📱 Do these steps on your Android phone — open this page in Chrome on the phone first.</div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="no">2a</span>
+          <h3>Download the app</h3>
+          <p>Tap the button below (on your phone). When the download finishes, tap <b>Open</b> on the notification.</p>
+          <a href="/assets/xanadu.apk" class="btn primary">Download Xanadu ↓</a>
+          <div class="mini"><div class="dlbar"><div class="fico">APK</div><div class="fn">xanadu.apk<small>Download complete · 8 MB</small></div><div class="open">Open</div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">2b</span>
+          <h3>Tap “Settings” on the warning</h3>
+          <p>Android checks that you meant to install from Chrome. Tap <b>Settings</b> on the popup.</p>
+          <div class="mini"><div class="adlg"><div class="t">Chrome</div><p>For your security, your phone is not allowed to install unknown apps from this source.</p><div class="btns"><span>Cancel</span><span class="go">Settings</span></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">2c</span>
+          <h3>Allow, then go back</h3>
+          <p>Flip the toggle on, then press your phone's <b>back</b> button once.</p>
+          <div class="mini"><div class="arow"><div class="al"><span>Allow from this source</span><small>Chrome · install unknown apps</small></div><div class="tgl"></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">2d</span>
+          <h3>Tap “Install”</h3>
+          <p>That's the install done. If Google Play Protect pops up too, tap <b>More details → Install anyway</b> — it flags any app it hasn't seen in the Play Store.</p>
+          <div class="mini"><div class="adlg"><div class="t">Xanadu</div><p>Do you want to install this app?</p><div class="btns"><span>Cancel</span><span class="go">Install</span></div></div></div>
+        </div>
       </div>
-      <div class="step reveal">
-        <span class="no">3</span>
-        <h3>Switch on screen control</h3>
-        <p>One Android accessibility toggle is what lets Xanadu tap and type in other apps for you. Enable it from Xanadu's settings.</p>
-        <div class="mini"><div class="sim-tgl"><span>Xanadu</span><div class="tgl"></div></div></div>
-      </div>
-      <div class="step reveal">
-        <span class="no">4</span>
-        <h3>Tap the core. Talk.</h3>
-        <p>Unlock with the license key from your email, tap the core, and say the thing you've been putting off.</p>
-        <div class="mini"><div class="sim-talk"><svg width="26" height="26" viewBox="0 0 24 24" style="color:#07130D"><use href="#glyph"/></svg></div></div>
+    </div>
+
+    <!-- PHASE 3 · FIRST RUN -->
+    <div class="phase reveal">
+      <div class="phase-head"><span class="pno">3</span><h3>Open it — three quick things</h3></div>
+      <p class="phase-sub">Xanadu walks you through these on first launch. Two pastes and one toggle, then you never see setup again.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="no">3a</span>
+          <h3>Paste your license key</h3>
+          <p>The one from step 1 — it's in your email if you didn't copy it.</p>
+          <div class="mini"><div class="sim-key"><label>License key</label><div class="field"><i>XAN-4F2K-••••-••••</i></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">3b</span>
+          <h3>Add your AI key</h3>
+          <p>Claude, GPT or Gemini — paste the API key for whichever you use. It's stored only on your phone. Leave the model on <b>Auto</b>.</p>
+          <div class="mini"><div class="sim-key"><label>Anthropic API key</label><div class="field"><i>sk-ant-••••••••••••••••</i></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">3c</span>
+          <h3>Switch on screen control</h3>
+          <p>One accessibility toggle lets Xanadu tap and type in other apps for you. The app takes you straight to it.</p>
+          <div class="mini"><div class="arow"><div class="al"><span>Xanadu</span><small>Accessibility · screen control</small></div><div class="tgl"></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">✓</span>
+          <h3>Tap the core. Talk.</h3>
+          <p>Say the thing you've been putting off. It's on it.</p>
+          <div class="mini"><div class="sim-talk"><svg width="26" height="26" viewBox="0 0 24 24" style="color:#07130D"><use href="#glyph"/></svg></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -336,24 +414,9 @@ footer .brand{justify-content:center;margin-bottom:12px}
   </div>
 </section>
 
-<!-- ================= DOWNLOAD ================= -->
-<section id="download">
+<!-- ================= FAQ ================= -->
+<section id="faq" style="padding-top:0">
   <div class="wrap reveal">
-    <div class="kicker">Download</div>
-    <h2 class="h2">Get the app.</h2>
-    <p class="sub">Direct APK download — you install it yourself, no store in the middle. Subscribe first to get your license key by email, then unlock the app with it.</p>
-    <div class="dl-grid">
-      <div class="card">
-        <h3>1 · Get your license</h3>
-        <p>One checkout, license key lands in your inbox.</p>
-        <br><a href="/api/checkout" class="btn primary">Get a license — $1</a>
-      </div>
-      <div class="card">
-        <h3>2 · Download Xanadu</h3>
-        <p>Android 8.0+ · about 8 MB · installs in seconds.</p>
-        <br><a href="/assets/xanadu.apk" class="btn ghost">Download APK ↓</a>
-      </div>
-    </div>
     <div class="faq">
       <details><summary>Why isn't it on the Play Store?</summary><p>Xanadu's superpower — operating other apps for you via accessibility — is something store review treats with heavy suspicion regardless of how responsibly it's built. Distributing directly means we can ship the full capability, and you always get the newest build straight from us.</p></details>
       <details><summary>What happens to my data?</summary><p>Your API key, memories and conversations live only on your phone. The only thing our server ever checks is whether your license is active. Uninstall the app and it's all gone.</p></details>

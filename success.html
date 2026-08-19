@@ -54,10 +54,11 @@
         if (data.error) throw new Error(data.error);
         content.innerHTML = `
           <h1>You're in 🎉</h1>
-          <p>Copy this license key and paste it into Xanadu when you open the app.</p>
+          <p>This is your license key — you'll paste it into the app in a minute. Tap it to copy.</p>
           <div class="tokenBox" id="tok">${data.token}</div>
           <p class="copyHint">Tap the box to copy${data.email ? ' — also emailed to ' + data.email : ''}.</p>
-          <a class="btn" href="/#download">Download the app</a>
+          <a class="btn" href="/#download">Next: install the app →</a>
+          <p class="copyHint" style="margin-top:14px">2 minutes, on your Android phone — every step is pictured.</p>
         `;
         document.getElementById('tok').onclick = () => {
           navigator.clipboard.writeText(data.token);

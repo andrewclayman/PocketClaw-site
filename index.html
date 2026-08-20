@@ -153,6 +153,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);ba
 .dlbar .fn{flex:1;font-size:11.5px;color:#F1F3F4;min-width:0}
 .dlbar .fn small{display:block;color:#9AA0A6;font-size:10px}
 .dlbar .open{color:#8AB4F8;font-weight:600;font-size:12px;padding:6px 13px;border-radius:18px;background:rgba(138,180,248,.14);animation:tapGlow 1.6s ease-in-out infinite}
+.applist{width:91%;background:#23272C;border-radius:16px;padding:14px 16px;text-align:left}
+.applist .t{font-weight:600;font-size:12.5px;color:#F1F3F4;margin-bottom:10px}
+.applist .app{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;font-size:11.5px;color:#F1F3F4}
+.applist .app .aico{width:26px;height:26px;border-radius:8px;background:#3C4043;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+.applist .app.go{background:rgba(138,180,248,.14);animation:tapGlow 1.6s ease-in-out infinite}
+.morerow{display:flex;align-items:center;gap:6px;color:#8AB4F8;font-size:11.5px;font-weight:600;margin:2px 0 10px;padding:5px 8px;border-radius:10px;width:fit-content;background:rgba(138,180,248,.14);animation:tapGlow 1.6s ease-in-out infinite}
 .arow{width:91%;background:#23272C;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
 .arow .al{min-width:0}
 .arow span{font-size:11.5px;color:#F1F3F4}
@@ -334,25 +340,37 @@ footer .brand{justify-content:center;margin-bottom:12px}
           <h3>Download the app</h3>
           <p>Tap the button below (on your phone). When the download finishes, tap <b>Open</b> on the notification.</p>
           <a href="/assets/xanadu.apk" class="btn primary">Download Xanadu ↓</a>
-          <div class="mini"><div class="dlbar"><div class="fico">APK</div><div class="fn">xanadu.apk<small>Download complete · 8 MB</small></div><div class="open">Open</div></div></div>
+          <div class="mini"><div class="dlbar"><div class="fico">APK</div><div class="fn">xanadu.apk<small>Download complete · 16 MB</small></div><div class="open">Open</div></div></div>
         </div>
         <div class="step reveal">
           <span class="no">2b</span>
+          <h3>Pick “Package installer”</h3>
+          <p>Your phone may ask which app to open the file with. Pick <b>Package installer</b> — that's Android's own installer.</p>
+          <div class="mini"><div class="applist"><div class="t">Open with</div><div class="app go"><span class="aico">📦</span>Package installer</div><div class="app"><span class="aico">📁</span>Files</div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">2c</span>
           <h3>Tap “Settings” on the warning</h3>
           <p>Android checks that you meant to install from Chrome. Tap <b>Settings</b> on the popup.</p>
           <div class="mini"><div class="adlg"><div class="t">Chrome</div><p>For your security, your phone is not allowed to install unknown apps from this source.</p><div class="btns"><span>Cancel</span><span class="go">Settings</span></div></div></div>
         </div>
         <div class="step reveal">
-          <span class="no">2c</span>
+          <span class="no">2d</span>
           <h3>Allow, then go back</h3>
           <p>Flip the toggle on, then press your phone's <b>back</b> button once.</p>
           <div class="mini"><div class="arow"><div class="al"><span>Allow from this source</span><small>Chrome · install unknown apps</small></div><div class="tgl"></div></div></div>
         </div>
         <div class="step reveal">
-          <span class="no">2d</span>
+          <span class="no">2e</span>
           <h3>Tap “Install”</h3>
-          <p>That's the install done. If Google Play Protect pops up too, tap <b>More details → Install anyway</b> — it flags any app it hasn't seen in the Play Store.</p>
+          <p>Android asks one more time — tap <b>Install</b>.</p>
           <div class="mini"><div class="adlg"><div class="t">Xanadu</div><p>Do you want to install this app?</p><div class="btns"><span>Cancel</span><span class="go">Install</span></div></div></div>
+        </div>
+        <div class="step reveal">
+          <span class="no">2f</span>
+          <h3>If it says “blocked” — it isn't</h3>
+          <p>Play Protect may say the install was blocked, and it <b>looks</b> final — it isn't. Tap the small <b>More details ⌄</b> arrow and <b>Install anyway</b> appears.</p>
+          <div class="mini" style="height:auto;min-height:172px;padding:14px 0"><div class="adlg"><div class="t">App blocked</div><p>Play Protect blocked this install — it doesn't recognise apps from outside the Play Store.</p><div class="morerow">More details ⌄</div><div class="btns"><span class="go">Install anyway</span></div></div></div>
         </div>
       </div>
     </div>

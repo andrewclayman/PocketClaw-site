@@ -196,6 +196,24 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);ba
 footer{padding:44px 24px;text-align:center;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
 footer .brand{justify-content:center;margin-bottom:12px}
 </style>
+<script defer src="/_vercel/insights/script.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1118270554468959');
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 
@@ -528,6 +546,23 @@ function play(i,manual){
     if(p<1){barRAF=requestAnimationFrame(tick)}else{play((cur+1)%SCENES.length)}})();
 }
 play(0);
+
+// Keep acquisition reporting tied to meaningful actions rather than generic clicks.
+document.querySelectorAll('a[href="/assets/xanadu.apk"]').forEach(link => {
+  link.addEventListener('click', () => {
+    if (typeof fbq === 'function') {
+      fbq('trackCustom', 'DownloadAPK', {content_name: 'Xanadu Android APK'});
+      fbq('track', 'Lead', {content_name: 'Xanadu Android APK'});
+    }
+  });
+});
+document.querySelectorAll('a[href="/api/checkout"]').forEach(link => {
+  link.addEventListener('click', () => {
+    if (typeof fbq === 'function') {
+      fbq('track', 'InitiateCheckout', {value: 1.00, currency: 'USD'});
+    }
+  });
+});
 </script>
 </body>
 </html>

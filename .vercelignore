@@ -4,3 +4,7 @@
 # THIS deploy only — keep it in sync if .gitignore's ignore patterns change.
 !assets/*.apk
 !assets/*.mp4
+
+# Local-only setup scripts: never needed on the server, so don't publish them.
+go-live.js
+setup-stripe.js

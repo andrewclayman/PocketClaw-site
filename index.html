@@ -188,6 +188,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);ba
 .price-card li::before{content:"✓";color:var(--green);font-weight:700}
 .byok{max-width:560px;margin:26px auto 0;color:var(--muted);font-size:13.5px;text-align:center}
 
+/* ---------- versions ---------- */
+.vt{margin-top:34px;overflow-x:auto;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.vt table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
+.vt th:first-child,.vt td:first-child{width:38%}
+@media (max-width:600px){.vt th,.vt td{padding:12px 10px;font-size:13.5px}.vt th{font-size:11px;letter-spacing:1px}}
+.vt th,.vt td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line)}
+.vt tr:last-child td{border-bottom:0}
+.vt th{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);font-weight:600}
+.vt td:first-child{color:var(--text);font-weight:500}
+.vt td{color:var(--muted)}
+.vt td.no{color:rgba(255,255,255,.3)}
+.vnote{margin-top:18px;color:var(--muted);font-size:14px;max-width:640px}
+.only{display:inline-block;margin-top:10px;font-size:12px;letter-spacing:.5px;color:var(--green);border:1px solid rgba(85,211,164,.35);border-radius:999px;padding:3px 10px}
+.hero-alt{margin-top:10px}
+.hero-alt a,.phase-sub a,.byok a{color:var(--green)}
+
 /* ---------- faq / footer ---------- */
 .faq{margin-top:70px;display:grid;gap:12px}
 .faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 22px}
@@ -197,23 +213,7 @@ footer{padding:44px 24px;text-align:center;color:var(--muted);font-size:13.5px;b
 footer .brand{justify-content:center;margin-bottom:12px}
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','1118270554468959');
-fbq('track','PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+<script src="/consent.js"></script>
 </head>
 <body>
 
@@ -230,6 +230,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#usecases">Use cases</a>
+      <a href="#versions">Versions</a>
       <a href="#setup">Install</a>
       <a href="#pricing">Pricing</a>
       <a href="#download" class="btn primary">Get Xanadu</a>
@@ -248,7 +249,8 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
         <a href="/api/checkout" class="btn primary">Get started — $1</a>
         <a href="#usecases" class="btn ghost">Watch it work ↓</a>
       </div>
-      <div class="hero-note">Bring your own AI key · Your data stays on your phone · Cancel anytime</div>
+      <div class="hero-note">Bring your own AI key · Chats stored on your phone · Cancel anytime</div>
+      <div class="hero-note hero-alt"><a href="#versions">Also free on Google Play, without app control or calls →</a></div>
     </div>
     <div class="hero-core">
       <div class="core">
@@ -265,9 +267,9 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
 <div class="strip">
   <div class="wrap">
     <div><b>Speaks & listens</b> — hands-free voice</div>
-    <div><b>Controls any app</b> — taps, types, scrolls</div>
+    <div><b>Controls your apps</b> — taps, types, scrolls</div>
     <div><b>Makes real calls</b> — and reports back</div>
-    <div><b>Biometric-gated</b> — nothing irreversible without your fingerprint</div>
+    <div><b>Fingerprint-gated</b> — asks before it pays or sends</div>
   </div>
 </div>
 
@@ -277,17 +279,17 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
     <div class="reveal">
       <div class="kicker">What it is</div>
       <h2 class="h2">Not a chatbot. A control layer.</h2>
-      <p class="sub">Assistants answer questions. Xanadu operates the phone itself — the same screens you'd tap, it taps. Anything you could do with your thumbs and twenty spare minutes, you can now say out loud and walk away from. You bring your own AI key (Claude, GPT or Gemini), so your conversations run on your account, not through our servers.</p>
+      <p class="sub">Assistants answer questions. Xanadu operates the phone itself — the same screens you'd tap, it taps. Anything you could do with your thumbs and twenty spare minutes, you can now say out loud and walk away from. You bring your own AI key (Claude, GPT, Gemini, Grok and more), so your conversations run on your account, not through our servers.</p>
     </div>
     <div class="grid">
       <div class="card reveal"><div class="ic">◉</div><h3>Voice-first</h3><p>Tap the core and talk. Hands-free conversation mode keeps listening between turns, and it can speak every reply aloud — with a natural premium voice if you want it.</p></div>
-      <div class="card reveal"><div class="ic">▤</div><h3>Operates any app</h3><p>Reads the screen, taps buttons, types into fields, scrolls. WhatsApp, Amazon, banking apps, booking sites — no integrations needed.</p></div>
-      <div class="card reveal"><div class="ic">✆</div><h3>Real phone calls</h3><p>It can ring the shop, ask if the part's in stock, book the table, and come back with a transcript. Always introduces itself as an AI.</p></div>
+      <div class="card reveal"><div class="ic">▤</div><h3>Operates your apps</h3><p>Reads the screen, taps buttons, types into fields, scrolls. WhatsApp, Amazon, booking sites, online forms — no integrations needed.</p><span class="only">Website version</span></div>
+      <div class="card reveal"><div class="ic">✆</div><h3>Real phone calls</h3><p>It can ring the shop, ask if the part's in stock, book the table, and come back with a transcript. It tells anyone who asks that it's an AI.</p><span class="only">Website version</span></div>
       <div class="card reveal"><div class="ic">✉</div><h3>Gmail & Calendar</h3><p>Searches your inbox, sends mail, checks your week and adds events directly — no app juggling.</p></div>
       <div class="card reveal"><div class="ic">♬</div><h3>Spotify</h3><p>Builds real playlists on your account from a sentence: “make me a playlist for cooking angry.”</p></div>
       <div class="card reveal"><div class="ic">◈</div><h3>Remembers</h3><p>Birthdays, preferences, where you put things, what the plumber said. Saved on-device, recalled when it matters.</p></div>
       <div class="card reveal"><div class="ic">⏱</div><h3>Watches & schedules</h3><p>“Check hourly if the jacket is back in stock.” “Wake me only if it rains.” It keeps working while the screen is off.</p></div>
-      <div class="card reveal"><div class="ic">🔒</div><h3>Safety built in</h3><p>Purchases, sent emails and anything irreversible require your fingerprint on a system prompt. The AI cannot approve itself.</p></div>
+      <div class="card reveal"><div class="ic">🔒</div><h3>Safety built in</h3><p>Sending an email from your Gmail always needs your fingerprint, and it's set up to stop for your fingerprint before it pays for or books anything. The AI can't approve that prompt itself.</p></div>
     </div>
   </div>
 </section>
@@ -298,7 +300,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
     <div class="reveal">
       <div class="kicker">See it work</div>
       <h2 class="h2">A day with Xanadu</h2>
-      <p class="sub">Live simulations of real capabilities — nothing here is fabricated; every step below maps to something the shipped app actually does.</p>
+      <p class="sub">Simulated examples, but every step maps to something the app really does. Most of them use app control or calls, which are in the website version.</p>
     </div>
     <div class="theatre">
       <div class="phone reveal">
@@ -318,12 +320,39 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
 </section>
 
 <!-- ================= GET IT: BUY → INSTALL → FIRST RUN ================= -->
+<!-- ================= VERSIONS ================= -->
+<section id="versions">
+  <div class="wrap reveal">
+    <div class="kicker">Two versions</div>
+    <h2 class="h2">Free on Google Play. The full version is here.</h2>
+    <p class="sub">Google Play doesn't allow apps to use Android's accessibility controls to carry out tasks on their own, so the Play version can't tap and type in your other apps. Phone calls run on our own servers and cost us by the minute, so they come with the paid version. Everything else is the same app.</p>
+    <div class="vt"><table>
+      <thead><tr><th></th><th>Google Play</th><th>This website</th></tr></thead>
+      <tbody>
+        <tr><td>Price</td><td>Free</td><td>$1/mo for 3 months, then $5/mo</td></tr>
+        <tr><td>Uses your own AI key</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Voice, memory, reminders and lists</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Gmail, Calendar, Spotify and Maps</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Watches and scheduled tasks</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Operates your other apps</td><td class="no">—</td><td>✓</td></tr>
+        <tr><td>Phones businesses and people for you</td><td class="no">—</td><td>✓</td></tr>
+        <tr><td>Updates</td><td>Automatic, through Google Play</td><td>Download the new version from this page</td></tr>
+      </tbody>
+    </table></div>
+    <div class="hero-ctas" style="margin-top:28px">
+      <a href="#setup" class="btn primary">Get the full version — $1</a>
+      <a href="https://play.google.com/store/apps/details?id=com.pocketclaw" class="btn ghost" rel="noopener">Free version on Google Play</a>
+    </div>
+    <p class="vnote">You can only have one version installed at a time. To switch, uninstall the one you have first. Your chats and memories are stored inside the app, so they won't carry over.</p>
+  </div>
+</section>
+
 <section id="setup">
   <div class="wrap">
     <div class="reveal">
       <div class="kicker">Get Xanadu</div>
       <h2 class="h2">Buy it. Install it. Done in four minutes.</h2>
-      <p class="sub">Every screen you'll see along the way is pictured below — on each one, just tap the glowing button.</p>
+      <p class="sub">This is the full version. Every screen you'll see along the way is pictured below — on each one, just tap the glowing button.</p>
     </div>
 
     <!-- PHASE 1 · BUY -->
@@ -336,7 +365,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
           <h3>Subscribe for $1</h3>
           <p>Card, Google Pay or Apple Pay — takes about 30 seconds.</p>
           <a href="/api/checkout" class="btn primary">Get my license — $1</a>
-          <div class="mini"><div class="adlg"><div class="t">Checkout</div><p>Xanadu — $1.00 for your first month</p><div class="btns"><span class="go">Pay</span></div></div></div>
+          <div class="mini"><div class="adlg"><div class="t">Checkout</div><p>Xanadu — $1.00/month for 3 months, then $5.00</p><div class="btns"><span class="go">Pay</span></div></div></div>
         </div>
         <div class="step reveal">
           <span class="no">1b</span>
@@ -351,6 +380,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
     <div class="phase reveal" id="download">
       <div class="phase-head"><span class="pno">2</span><h3>Install — on your phone</h3></div>
       <p class="phase-sub">Xanadu installs straight from this site, no app store needed. Android will double-check that you meant to do it — that's normal for any app installed outside the Play Store, and it looks exactly like this:</p>
+      <p class="phase-sub">You'll need the license key from step 1 to unlock it. Want the free version instead? <a href="https://play.google.com/store/apps/details?id=com.pocketclaw" rel="noopener">Get it on Google Play</a> — it can't operate other apps or make calls.</p>
       <div class="phone-note">📱 Do these steps on your Android phone — open this page in Chrome on the phone first.</div>
       <div class="steps">
         <div class="step reveal">
@@ -358,7 +388,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
           <h3>Download the app</h3>
           <p>Tap the button below (on your phone). When the download finishes, tap <b>Open</b> on the notification.</p>
           <a href="/assets/xanadu.apk" class="btn primary">Download Xanadu ↓</a>
-          <div class="mini"><div class="dlbar"><div class="fico">APK</div><div class="fn">xanadu.apk<small>Download complete · 16 MB</small></div><div class="open">Open</div></div></div>
+          <div class="mini"><div class="dlbar"><div class="fico">APK</div><div class="fn">xanadu.apk<small>Download complete · 9 MB</small></div><div class="open">Open</div></div></div>
         </div>
         <div class="step reveal">
           <span class="no">2b</span>
@@ -407,7 +437,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
         <div class="step reveal">
           <span class="no">3b</span>
           <h3>Add your AI key</h3>
-          <p>Claude, GPT or Gemini — paste the API key for whichever you use. It's stored only on your phone. Leave the model on <b>Auto</b>.</p>
+          <p>Claude, GPT, Gemini, Grok and more — paste the API key for whichever you use. It's stored only on your phone. Leave the model on <b>Auto</b>.</p>
           <div class="mini"><div class="sim-key"><label>Anthropic API key</label><div class="field"><i>sk-ant-••••••••••••••••</i></div></div></div>
         </div>
         <div class="step reveal">
@@ -440,13 +470,14 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
       <div class="price-note">for your first 3 months, then $5/mo</div>
       <ul>
         <li>The full app — every capability on this page</li>
-        <li>Voice, screen control, memory, watches, integrations</li>
-        <li>Updates as we ship them, no reinstall gymnastics</li>
-        <li>Cancel anytime — it just stops next month</li>
+        <li>Voice, app control, phone calls, memory, watches, integrations</li>
+        <li>New versions posted here — install over the top, nothing lost</li>
+        <li>Cancel anytime — email us and it won't renew</li>
       </ul>
       <a href="/api/checkout" class="btn primary" style="width:100%;justify-content:center">Subscribe — $1 to start</a>
     </div>
-    <p class="byok">Your subscription pays for the app. The AI itself runs on your own API key, billed by your provider at their rates — typically pennies a day for normal use. We never see your key or your conversations.</p>
+    <p class="byok">Your subscription pays for the app and its phone calls. The AI itself runs on your own API key, billed by your provider at their rates: light use usually costs pennies, and long tasks in other apps cost more. We never see your key or your chats. Phone calls are the one thing that runs on our servers.</p>
+    <p class="byok">Prefer free? The <a href="https://play.google.com/store/apps/details?id=com.pocketclaw" rel="noopener">Google Play version</a> costs nothing, but can't operate other apps or make calls. <a href="#versions">Compare versions</a>.</p>
   </div>
 </section>
 
@@ -454,10 +485,10 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
 <section id="faq" style="padding-top:0">
   <div class="wrap reveal">
     <div class="faq">
-      <details><summary>Why isn't it on the Play Store?</summary><p>Xanadu's superpower — operating other apps for you via accessibility — is something store review treats with heavy suspicion regardless of how responsibly it's built. Distributing directly means we can ship the full capability, and you always get the newest build straight from us.</p></details>
-      <details><summary>What happens to my data?</summary><p>Your API key, memories and conversations live only on your phone. The only thing our server ever checks is whether your license is active. Uninstall the app and it's all gone.</p></details>
-      <details><summary>Which AI should I use with it?</summary><p>Any of Claude (Anthropic), GPT (OpenAI) or Gemini (Google) — you paste the key for whichever you have. The Auto setting uses a fast model for chat and automatically switches to a stronger one when Xanadu starts doing real work.</p></details>
-      <details><summary>Can it really spend my money?</summary><p>Only with your fingerprint. Anything irreversible — placing an order, sending an email, confirming a booking — triggers a biometric system prompt describing exactly what's about to happen. No fingerprint, no action.</p></details>
+      <details><summary>Is it on Google Play?</summary><p>Yes, as a <a href="https://play.google.com/store/apps/details?id=com.pocketclaw" rel="noopener" style="color:var(--green)">free version</a>. Google Play doesn't allow apps to use Android's accessibility controls to carry out tasks on their own, so that version can't operate your other apps. It also leaves out phone calls, which run on our servers. The full version installs from this site. You can only have one installed at a time.</p></details>
+      <details><summary>What happens to my data?</summary><p>Your API key, memories and conversations are stored only on your phone, and your requests go straight to the AI provider you chose. Our server checks whether your license is active, and runs phone calls if you use them. Uninstall the app and everything it stored is gone.</p></details>
+      <details><summary>Which AI should I use with it?</summary><p>Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), DeepSeek, Mistral, or hundreds of models through OpenRouter — you paste the key for whichever you have. The Auto setting uses a fast model for chat and automatically switches to a stronger one when Xanadu starts doing real work.</p></details>
+      <details><summary>Can it really spend my money?</summary><p>Only after you approve. Sending an email from your Gmail always needs your fingerprint. Before it pays for or books anything in another app, it's set up to stop and show a fingerprint prompt describing exactly what's about to happen, and the AI can't approve that prompt itself.</p></details>
     </div>
   </div>
 </section>
@@ -467,7 +498,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
     <span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" style="color:#08120D"><use href="#glyph"/></svg></span>
     Xanadu
   </a>
-  <div>The AI that runs your phone. · <a href="mailto:hello@xanadulynx.com" style="color:var(--green)">Contact</a></div>
+  <div>The AI that runs your phone. · <a href="/privacy.html" style="color:var(--green)">Privacy</a> · <a href="#" data-cookie-settings style="color:var(--green)">Cookie settings</a> · <a href="mailto:hello@xanadulynx.com" style="color:var(--green)">Contact</a></div>
 </footer>
 
 <script>
@@ -489,17 +520,16 @@ const SCENES=[
           ["tool","Tapping"],
           ["ai","Booked — table for 2 at 8pm, confirmation's in your email. Added to your calendar."]]},
  {title:"The anniversary save",
-  desc:"Alarms that escalate, flowers ordered for collection, and a fingerprint before any money moves.",
+  desc:"A reminder that keeps nudging, flowers ordered for collection, and a fingerprint before any money moves.",
   tab:["Anniversary rescue","“Don't let me forget. Not this year.”"],
   script:[["user","Anniversary is Friday. Do not let me forget"],
           ["tool","Scheduling a reminder"],
-          ["tool","Scheduling a reminder"],
-          ["ai","Reminders set for Wed, Thu and Friday 7am — they get louder. Want me to sort flowers now?"],
+          ["ai","Done — from Wednesday it'll keep nudging you until you tick it off. Want me to sort flowers now?"],
           ["user","Yes, peonies if possible"],
           ["tool","Finding places nearby"],
-          ["tool","On the phone for you"],
+          ["tool","Looking at the screen"],
           ["approve","👆 Approve with fingerprint: £34 peony bouquet, collect Friday 5pm"],
-          ["ai","Done — Bloom & Wild off the high street, peonies, ready Friday 5pm on your way home."]]},
+          ["ai","Done — the florist on the high street, peonies, ready Friday 5pm on your way home."]]},
  {title:"Settle the score",
   desc:"It reads your actual chats and tells you the truth about who owes whom.",
   tab:["WhatsApp receipts","“Did I already pay Dan back?”"],
@@ -512,8 +542,8 @@ const SCENES=[
  {title:"It makes the call",
   desc:"A real phone call to a real shop, handled start to finish, with a transcript when it's done.",
   tab:["The phone call","“Ring the shop and ask if it's in stock.”"],
-  script:[["user","Call Halfords, ask if they have the 26 inch inner tubes"],
-          ["ai","Calling Halfords Chelmsford now — I'll report back."],
+  script:[["user","Call the bike shop, ask if they have 26 inch inner tubes"],
+          ["ai","Calling them now — I'll report back."],
           ["tool","On the phone for you"],
           ["ai","Done. They have 4 in stock, £6.99 each, and they'll hold two under your name till closing (8pm). Transcript's here if you want it."]]}
 ];
@@ -554,6 +584,11 @@ document.querySelectorAll('a[href="/assets/xanadu.apk"]').forEach(link => {
       fbq('trackCustom', 'DownloadAPK', {content_name: 'Xanadu Android APK'});
       fbq('track', 'Lead', {content_name: 'Xanadu Android APK'});
     }
+  });
+});
+document.querySelectorAll('a[href="https://play.google.com/store/apps/details?id=com.pocketclaw"]').forEach(link => {
+  link.addEventListener('click', () => {
+    if (typeof fbq === 'function') fbq('trackCustom', 'PlayStoreClick');
   });
 });
 document.querySelectorAll('a[href="/api/checkout"]').forEach(link => {

@@ -32,23 +32,7 @@
   .err{color:#E08A8A}
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','1118270554468959');
-fbq('track','PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+<script src="/consent.js"></script>
 </head>
 <body>
 <div class="card">
@@ -74,7 +58,7 @@ src="https://www.facebook.com/tr?id=1118270554468959&ev=PageView&noscript=1"
           <h1>You're in 🎉</h1>
           <p>This is your license key — you'll paste it into the app in a minute. Tap it to copy.</p>
           <div class="tokenBox" id="tok">${data.token}</div>
-          <p class="copyHint">Tap the box to copy, and keep it somewhere safe — this page is the only place it's shown.</p>
+          <p class="copyHint">Tap the box to copy, and keep it somewhere safe. If you lose it, you can unlock the app with the email you paid with instead.</p>
           <a class="btn" href="/#download">Next: install the app →</a>
           <p class="copyHint" style="margin-top:14px">2 minutes, on your Android phone — every step is pictured.</p>
         `;

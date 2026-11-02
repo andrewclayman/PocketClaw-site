@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
   const isNewTask = last?.role === 'user' && !toolPictures;
   const isStarter = req.headers['x-xanadu-starter'] === '1';
   let charged = null; // 'task' or 'starter': what this request took, to give back if it fails
+  let taskUsd = 0; // what this task has cost before this request
 
   try {
     await ai.ensureSchema();
@@ -71,7 +72,8 @@ module.exports = async (req, res) => {
     if (isNewTask && isStarter && Number(row.starter_used || 0) < ai.CONFIG.starterTasks) {
       // A starter card: free, and it doesn't start the free-period clock either.
       const [took] = await ai.execute([
-        `UPDATE ai_installs SET starter_used = starter_used + 1, last_call_at = ?, task_calls = 1, day = ?, day_calls = ?
+        `UPDATE ai_installs SET starter_used = starter_used + 1, last_call_at = ?, task_calls = 1, task_usd = 0,
+           day = ?, day_calls = ?
          WHERE id = ? AND starter_used < ? RETURNING starter_used`,
         [I(now), T(today), I(dayCalls + 1), T(id), I(ai.CONFIG.starterTasks)],
       ]);
@@ -86,7 +88,7 @@ module.exports = async (req, res) => {
       // Conditional on the count so two simultaneous requests can't both take the last task.
       const [took] = await ai.execute([
         `UPDATE ai_installs SET tasks_used = tasks_used + 1, first_task_at = COALESCE(first_task_at, ?),
-           last_call_at = ?, task_calls = 1, day = ?, day_calls = ?
+           last_call_at = ?, task_calls = 1, task_usd = 0, day = ?, day_calls = ?
          WHERE id = ? AND tasks_used < ? RETURNING tasks_used`,
         [I(now), I(now), T(today), I(dayCalls + 1), T(id), I(ai.CONFIG.freeTasks)],
       ]);
@@ -102,13 +104,16 @@ module.exports = async (req, res) => {
         'UPDATE ai_installs SET task_calls = task_calls + 1, last_call_at = ?, day = ?, day_calls = ? WHERE id = ?',
         [I(now), T(today), I(dayCalls + 1), T(id)],
       ]);
+      taskUsd = Number(row.task_usd || 0);
     }
   } catch (e) {
     console.error('ai: bookkeeping failed', e);
     return fail(res, 500, 'server_error', 'The free AI hit a server problem. Try again in a minute.');
   }
 
-  const model = ai.resolveModel(body.model);
+  // A task that has already cost its share carries on with the fast model rather than stopping.
+  let model = ai.resolveModel(body.model);
+  if (model === ai.CONFIG.capableModel && taskUsd >= ai.CONFIG.taskCapableUsd) model = ai.CONFIG.fastModel;
   const upstreamBody = { model, max_completion_tokens: ai.CONFIG.maxOutputTokens };
   for (const k of PASSTHROUGH) if (body[k] !== undefined) upstreamBody[k] = body[k];
   const stream = upstreamBody.stream === true;
@@ -187,7 +192,7 @@ module.exports = async (req, res) => {
       : 0;
     const counted = charged && upstreamOk ? 1 : 0;
     await ai.execute(
-      ['UPDATE ai_installs SET spend_usd = spend_usd + ? WHERE id = ?', [['real', cost], T(id)]],
+      ['UPDATE ai_installs SET spend_usd = spend_usd + ?, task_usd = task_usd + ? WHERE id = ?', [['real', cost], ['real', cost], T(id)]],
       [`INSERT INTO ai_spend (month, usd, calls, tasks) VALUES (?, ?, 1, ?)
         ON CONFLICT(month) DO UPDATE SET usd = usd + excluded.usd, calls = calls + 1, tasks = tasks + excluded.tasks`,
         [T(ai.month(now)), ['real', cost], I(counted)]],

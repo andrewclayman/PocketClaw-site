@@ -3,6 +3,9 @@
   "functions": {
     "api/ai.js": {
       "maxDuration": 300
+    },
+    "api/search.js": {
+      "maxDuration": 60
     }
   }
 }

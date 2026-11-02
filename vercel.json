@@ -1,3 +1,8 @@
 {
-  "cleanUrls": false
+  "cleanUrls": false,
+  "functions": {
+    "api/ai.js": {
+      "maxDuration": 300
+    }
+  }
 }

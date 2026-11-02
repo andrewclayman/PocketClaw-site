@@ -1,0 +1,45 @@
+// GET /api/ai-stats?key=AI_ADMIN_KEY — how the free built-in AI is being used: installs,
+// tasks, daily actives and spend. Counts only; nothing about what anyone asked.
+const ai = require('../lib/ai');
+const { T, I } = ai;
+
+module.exports = async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const key = process.env.AI_ADMIN_KEY;
+  if (!key || req.query.key !== key) return res.status(404).json({ error: 'not found' });
+  try {
+    await ai.ensureSchema();
+    const now = Date.now();
+    const since = ai.day(now - 13 * 86_400_000);
+    const [month, installs, hist, daily, active, newByDay] = await ai.execute(
+      ['SELECT usd, calls, tasks FROM ai_spend WHERE month = ?', [T(ai.month(now))]],
+      [`SELECT COUNT(*) AS total,
+          SUM(CASE WHEN created_at > ? THEN 1 ELSE 0 END) AS last24h,
+          SUM(CASE WHEN created_at > ? THEN 1 ELSE 0 END) AS last7d,
+          SUM(CASE WHEN tasks_used > 0 THEN 1 ELSE 0 END) AS triedATask,
+          SUM(CASE WHEN tasks_used >= ? THEN 1 ELSE 0 END) AS usedAllFree
+        FROM ai_installs`, [I(now - 86_400_000), I(now - 7 * 86_400_000), I(ai.CONFIG.freeTasks)]],
+      ['SELECT tasks_used AS tasks, COUNT(*) AS installs FROM ai_installs GROUP BY tasks_used ORDER BY tasks_used', []],
+      ['SELECT day, tasks, calls, ROUND(usd, 4) AS usd FROM ai_daily WHERE day >= ? ORDER BY day', [T(since)]],
+      ['SELECT day, COUNT(*) AS n FROM ai_active WHERE day >= ? GROUP BY day', [T(since)]],
+      [`SELECT strftime('%Y-%m-%d', created_at / 1000, 'unixepoch') AS day, COUNT(*) AS n
+        FROM ai_installs WHERE created_at > ? GROUP BY day`, [I(now - 14 * 86_400_000)]]
+    );
+    const byDay = {};
+    const slot = (d) => (byDay[d] ||= { day: d, newInstalls: 0, activeInstalls: 0, tasks: 0, calls: 0, usd: 0 });
+    for (const r of newByDay) slot(r.day).newInstalls = Number(r.n);
+    for (const r of active) slot(r.day).activeInstalls = Number(r.n);
+    for (const r of daily) Object.assign(slot(r.day), { tasks: Number(r.tasks), calls: Number(r.calls), usd: Number(r.usd) });
+    const m = month[0] || { usd: 0, calls: 0, tasks: 0 };
+    res.status(200).json({
+      month: { spendUsd: Number(Number(m.usd).toFixed(4)), capUsd: ai.CONFIG.monthlyCapUsd, calls: Number(m.calls), tasks: Number(m.tasks) },
+      installs: Object.fromEntries(Object.entries(installs[0] || {}).map(([k, v]) => [k, Number(v || 0)])),
+      tasksUsedPerInstall: hist.map((r) => ({ tasks: Number(r.tasks), installs: Number(r.installs) })),
+      last14Days: Object.values(byDay).sort((a, b) => a.day.localeCompare(b.day)),
+      config: { freeTasks: ai.CONFIG.freeTasks, freeDays: ai.CONFIG.freeDays, fast: ai.CONFIG.fastModel, capable: ai.CONFIG.capableModel },
+    });
+  } catch (e) {
+    console.error('ai-stats failed', e);
+    res.status(500).json({ error: e.message });
+  }
+};

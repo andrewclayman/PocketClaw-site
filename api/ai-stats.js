@@ -17,7 +17,8 @@ module.exports = async (req, res) => {
           SUM(CASE WHEN created_at > ? THEN 1 ELSE 0 END) AS last24h,
           SUM(CASE WHEN created_at > ? THEN 1 ELSE 0 END) AS last7d,
           SUM(CASE WHEN tasks_used > 0 THEN 1 ELSE 0 END) AS triedATask,
-          SUM(CASE WHEN tasks_used >= ? THEN 1 ELSE 0 END) AS usedAllFree
+          SUM(CASE WHEN tasks_used >= ? THEN 1 ELSE 0 END) AS usedAllFree,
+          SUM(starter_used) AS starterTasks
         FROM ai_installs`, [I(now - 86_400_000), I(now - 7 * 86_400_000), I(ai.CONFIG.freeTasks)]],
       ['SELECT tasks_used AS tasks, COUNT(*) AS installs FROM ai_installs GROUP BY tasks_used ORDER BY tasks_used', []],
       ['SELECT day, tasks, calls, ROUND(usd, 4) AS usd FROM ai_daily WHERE day >= ? ORDER BY day', [T(since)]],
@@ -36,7 +37,7 @@ module.exports = async (req, res) => {
       installs: Object.fromEntries(Object.entries(installs[0] || {}).map(([k, v]) => [k, Number(v || 0)])),
       tasksUsedPerInstall: hist.map((r) => ({ tasks: Number(r.tasks), installs: Number(r.installs) })),
       last14Days: Object.values(byDay).sort((a, b) => a.day.localeCompare(b.day)),
-      config: { freeTasks: ai.CONFIG.freeTasks, freeDays: ai.CONFIG.freeDays, fast: ai.CONFIG.fastModel, capable: ai.CONFIG.capableModel },
+      config: { freeTasks: ai.CONFIG.freeTasks, freeDays: ai.CONFIG.freeDays, starterTasks: ai.CONFIG.starterTasks, fast: ai.CONFIG.fastModel, capable: ai.CONFIG.capableModel },
     });
   } catch (e) {
     console.error('ai-stats failed', e);

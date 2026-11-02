@@ -35,7 +35,8 @@ module.exports = async (req, res) => {
   const now = Date.now();
   const today = ai.day(now);
   const isNewTask = messages[messages.length - 1]?.role === 'user';
-  let charged = false; // this request took a task from the allowance
+  const isStarter = req.headers['x-xanadu-starter'] === '1';
+  let charged = null; // 'task' or 'starter': what this request took, to give back if it fails
 
   try {
     await ai.ensureSchema();
@@ -54,7 +55,18 @@ module.exports = async (req, res) => {
       return fail(res, 429, 'daily_limit', 'daily_limit: Too many requests today. Try again tomorrow.');
     }
 
-    if (isNewTask) {
+    if (isNewTask && isStarter && Number(row.starter_used || 0) < ai.CONFIG.starterTasks) {
+      // A starter card: free, and it doesn't start the free-period clock either.
+      const [took] = await ai.execute([
+        `UPDATE ai_installs SET starter_used = starter_used + 1, last_call_at = ?, task_calls = 1, day = ?, day_calls = ?
+         WHERE id = ? AND starter_used < ? RETURNING starter_used`,
+        [I(now), T(today), I(dayCalls + 1), T(id), I(ai.CONFIG.starterTasks)],
+      ]);
+      if (took.length) charged = 'starter';
+    }
+    if (charged) {
+      // taken as a starter above
+    } else if (isNewTask) {
       const st = ai.status(row, spend, now);
       if (st.expired) return fail(res, 402, 'free_trial_ended', MESSAGES.free_trial_ended);
       if (st.tasksLeft <= 0) return fail(res, 402, 'free_tasks_used', MESSAGES.free_tasks_used);
@@ -66,7 +78,7 @@ module.exports = async (req, res) => {
         [I(now), I(now), T(today), I(dayCalls + 1), T(id), I(ai.CONFIG.freeTasks)],
       ]);
       if (!took.length) return fail(res, 402, 'free_tasks_used', MESSAGES.free_tasks_used);
-      charged = true;
+      charged = 'task';
     } else {
       const idle = row.last_call_at == null || now - Number(row.last_call_at) > ai.CONFIG.taskIdleMs;
       if (idle) return fail(res, 409, 'task_expired', 'task_expired: That task timed out. Send your message again.');
@@ -153,7 +165,8 @@ module.exports = async (req, res) => {
   try {
     // The user got nothing for this task, so it doesn't count against them.
     if (!upstreamOk && charged) {
-      await ai.execute(['UPDATE ai_installs SET tasks_used = MAX(0, tasks_used - 1) WHERE id = ?', [T(id)]]);
+      const col = charged === 'starter' ? 'starter_used' : 'tasks_used';
+      await ai.execute([`UPDATE ai_installs SET ${col} = MAX(0, ${col} - 1) WHERE id = ?`, [T(id)]]);
     }
     // An aborted stream never reports usage; charge a rough estimate rather than nothing.
     const cost = usage ? ai.costUsd(model, usage)

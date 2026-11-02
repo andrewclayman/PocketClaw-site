@@ -22,6 +22,12 @@ const MESSAGES = {
   busy: 'upstream_unavailable: The AI is busy right now. Try again in a moment.',
 };
 
+// Characters of text in the messages, for the rough cost estimate; picture data is left out,
+// since base64 would make the estimate hundreds of times too big (low-detail pictures are cheap).
+function textLength(messages) {
+  return JSON.stringify(messages, (k, v) => (k === 'url' && typeof v === 'string' && v.startsWith('data:') ? '' : v)).length;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return fail(res, 405, 'method_not_allowed', 'POST only');
@@ -34,7 +40,14 @@ module.exports = async (req, res) => {
 
   const now = Date.now();
   const today = ai.day(now);
-  const isNewTask = messages[messages.length - 1]?.role === 'user';
+  // A task starts when the person sends something: the request ends on a user message. The one
+  // exception is the pictures a tool fetched mid-task (look_at_images), which the app sends as a
+  // user message right after the tool results, since tool messages can only carry text.
+  const last = messages[messages.length - 1];
+  const prev = messages[messages.length - 2];
+  const toolPictures = prev?.role === 'tool' && Array.isArray(last?.content)
+    && last.content.some((p) => p?.type === 'image_url');
+  const isNewTask = last?.role === 'user' && !toolPictures;
   const isStarter = req.headers['x-xanadu-starter'] === '1';
   let charged = null; // 'task' or 'starter': what this request took, to give back if it fails
 
@@ -170,7 +183,7 @@ module.exports = async (req, res) => {
     }
     // An aborted stream never reports usage; charge a rough estimate rather than nothing.
     const cost = usage ? ai.costUsd(model, usage)
-      : upstreamOk ? ai.costUsd(model, { prompt_tokens: Math.ceil(JSON.stringify(messages).length / 3.5), completion_tokens: 1000 })
+      : upstreamOk ? ai.costUsd(model, { prompt_tokens: Math.ceil(textLength(messages) / 3.5), completion_tokens: 1000 })
       : 0;
     const counted = charged && upstreamOk ? 1 : 0;
     await ai.execute(

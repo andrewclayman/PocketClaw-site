@@ -141,6 +141,11 @@ module.exports = async (req, res) => {
         let msg = 'The AI rejected the request.';
         try { msg = JSON.parse(text).error?.message || msg; } catch {}
         fail(res, 400, 'bad_request', msg);
+      } else if (up.status === 429 && /insufficient_quota|credit_balance_exhausted/.test(text)) {
+        // Our OpenAI account is out of credit. "Busy, try again" would have people retrying
+        // forever; paused tells them to use their own key meanwhile (the app shows how).
+        console.error('ai: OPENAI ACCOUNT OUT OF CREDIT');
+        fail(res, 503, 'free_tier_paused', MESSAGES.free_tier_paused);
       } else {
         fail(res, 502, 'upstream_unavailable', MESSAGES.busy);
       }

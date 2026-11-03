@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
     if (op === 'grant') return await grant(req, res);
     const who = await calls.identify(req);
     if (who.error) return fail(res, ...who.error);
+    await sweepStale(who.subject, Date.now());
     if (op === 'status') {
       const row = await calls.account(who.subject);
       return res.status(200).json(calls.status(row, who.kind));
@@ -36,6 +37,29 @@ module.exports = async (req, res) => {
     return fail(res, 500, 'server_error', 'Calls are unavailable right now. Try again in a minute.');
   }
 };
+
+/** The statement that puts one call back into the allowance it was taken from. */
+function giveBack(subject, source, month) {
+  return {
+    free: ['UPDATE call_accounts SET free_used = MAX(0, free_used - 1) WHERE subject = ?', [T(subject)]],
+    credit: ['UPDATE call_accounts SET credits = credits + 1 WHERE subject = ?', [T(subject)]],
+    licence: ['UPDATE call_accounts SET month_used = MAX(0, month_used - 1) WHERE subject = ? AND month = ?',
+      [T(subject), T(month)]],
+  }[source];
+}
+
+// A ticket the calls server never reported on was never used: the app lost signal before it
+// reached the server, say. No call lasts this long, so by then it goes back to the allowance.
+const STALE_MS = 15 * 60_000;
+async function sweepStale(subject, now) {
+  const [stale] = await ai.execute([
+    `UPDATE call_tickets SET reported_at = ?, charged = 0, outcome = 'unused'
+     WHERE subject = ? AND reported_at IS NULL AND created_at < ? RETURNING source, created_at`,
+    [I(now), T(subject), I(now - STALE_MS)],
+  ]);
+  const back = stale.map((t) => giveBack(subject, t.source, ai.month(Number(t.created_at)))).filter(Boolean);
+  if (back.length) await ai.execute(...back);
+}
 
 async function ticket(req, res, who) {
   const now = Date.now();
@@ -134,15 +158,8 @@ async function report(req, res) {
     ['UPDATE call_accounts SET usd = usd + ?, seconds = seconds + ?, calls = calls + ? WHERE subject = ?',
       [R(usd), I(seconds), I(charged), T(t.subject)]],
   ];
-  if (!charged) {
-    // Nobody answered, the line was busy, or the call was refused before dialling: give it back.
-    statements.push({
-      free: ['UPDATE call_accounts SET free_used = MAX(0, free_used - 1) WHERE subject = ?', [T(t.subject)]],
-      credit: ['UPDATE call_accounts SET credits = credits + 1 WHERE subject = ?', [T(t.subject)]],
-      licence: ['UPDATE call_accounts SET month_used = MAX(0, month_used - 1) WHERE subject = ? AND month = ?',
-        [T(t.subject), T(month)]],
-    }[t.source]);
-  }
+  // Nobody answered, the line was busy, or the call was refused before dialling: give it back.
+  if (!charged) statements.push(giveBack(t.subject, t.source, month));
   await ai.execute(...statements.filter(Boolean));
   return res.status(200).json({ ok: true });
 }

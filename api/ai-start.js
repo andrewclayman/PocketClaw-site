@@ -6,6 +6,15 @@ const crypto = require('crypto');
 const ai = require('../lib/ai');
 const { T, I } = ai;
 
+/** Notes that this install reached the chat screen today. A stats write; never fails the handshake. */
+async function recordOpen(id, now) {
+  try {
+    await ai.execute(['INSERT OR IGNORE INTO ai_opens (day, id) VALUES (?, ?)', [T(ai.day(now)), T(id)]]);
+  } catch (e) {
+    console.error('ai-start: recording the open failed', e);
+  }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: { message: 'POST only' } });
@@ -19,7 +28,10 @@ module.exports = async (req, res) => {
     const existing = ai.verifyInstall(body.token);
     if (existing) {
       const rows = await ai.query('SELECT * FROM ai_installs WHERE id = ?', [T(existing)]);
-      if (rows.length) return res.status(200).json({ token: body.token, ...ai.status(rows[0], spend, now) });
+      if (rows.length) {
+        await recordOpen(existing, now);
+        return res.status(200).json({ token: body.token, ...ai.status(rows[0], spend, now) });
+      }
       // A valid token whose row is gone (wiped table): fall through and issue a fresh one.
     }
 
@@ -37,6 +49,7 @@ module.exports = async (req, res) => {
       'INSERT INTO ai_installs (id, created_at, ip_hash, app_version) VALUES (?, ?, ?, ?)',
       [T(id), I(now), T(ipHash), T(appVersion)],
     ]);
+    await recordOpen(id, now);
     const row = { tasks_used: 0, first_task_at: null };
     return res.status(200).json({ token: ai.signInstall(id), ...ai.status(row, spend, now) });
   } catch (e) {

@@ -49,6 +49,9 @@ module.exports = async (req, res) => {
     && last.content.some((p) => p?.type === 'image_url');
   const isNewTask = last?.role === 'user' && !toolPictures;
   const isStarter = req.headers['x-xanadu-starter'] === '1';
+  // Which starter card (app 0.2.3+). Counted as a daily total per card, never against the install.
+  const cardHeader = String(req.headers['x-xanadu-card'] || '');
+  const card = isNewTask && isStarter && /^[a-z0-9_]{1,32}$/.test(cardHeader) ? cardHeader : null;
   let charged = null; // 'task' or 'starter': what this request took, to give back if it fails
   let taskUsd = 0; // what this task has cost before this request
 
@@ -204,7 +207,9 @@ module.exports = async (req, res) => {
       [`INSERT INTO ai_daily (day, usd, calls, tasks) VALUES (?, ?, 1, ?)
         ON CONFLICT(day) DO UPDATE SET usd = usd + excluded.usd, calls = calls + 1, tasks = tasks + excluded.tasks`,
         [T(today), ['real', cost], I(counted)]],
-      ['INSERT OR IGNORE INTO ai_active (day, id) VALUES (?, ?)', [T(today), T(id)]]
+      ['INSERT OR IGNORE INTO ai_active (day, id) VALUES (?, ?)', [T(today), T(id)]],
+      ...(card ? [[`INSERT INTO ai_cards (day, card, n) VALUES (?, ?, 1)
+        ON CONFLICT(day, card) DO UPDATE SET n = n + 1`, [T(today), T(card)]]] : [])
     );
   } catch (e) {
     console.error('ai: spend bookkeeping failed', e);

@@ -67,14 +67,16 @@ module.exports = async (req, res) => {
       ['SELECT tasks_used AS tasks, COUNT(*) AS registrations FROM ai_installs GROUP BY tasks_used ORDER BY tasks_used', []],
       ['SELECT day, tasks, calls, ROUND(usd, 4) AS usd FROM ai_daily WHERE day >= ? ORDER BY day', [T(since)]],
       ['SELECT day, COUNT(*) AS n FROM ai_active WHERE day >= ? GROUP BY day', [T(since)]],
-      [`SELECT ${createdDay} AS day, COUNT(*) AS n FROM ai_installs i WHERE i.created_at > ? GROUP BY day`,
+      // Not "GROUP BY day": ai_installs has its own day column (last active day), which SQLite
+      // groups by instead of the alias, and the per-day counts then overwrote each other.
+      [`SELECT ${createdDay} AS created_day, COUNT(*) AS n FROM ai_installs i WHERE i.created_at > ? GROUP BY 1`,
         [I(now - 14 * 86_400_000)]],
       ['SELECT day, COUNT(*) AS n FROM ai_opens WHERE day >= ? GROUP BY day', [T(since)]],
       ['SELECT day, card, n FROM ai_cards WHERE day >= ? ORDER BY day, card', [T(since)]]
     );
     const byDay = {};
     const slot = (d) => (byDay[d] ||= { day: d, newRegistrations: 0, opened: 0, usedAi: 0, tasks: 0, aiRequests: 0, usd: 0, cards: {} });
-    for (const r of newByDay) slot(r.day).newRegistrations = Number(r.n);
+    for (const r of newByDay) slot(r.created_day).newRegistrations = Number(r.n);
     for (const r of opens) slot(r.day).opened = Number(r.n);
     for (const r of active) slot(r.day).usedAi = Number(r.n);
     for (const r of daily) Object.assign(slot(r.day), { tasks: Number(r.tasks), aiRequests: Number(r.calls), usd: Number(r.usd) });

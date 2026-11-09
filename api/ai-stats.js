@@ -1,5 +1,6 @@
 // GET /api/ai-stats?key=AI_ADMIN_KEY — how the free built-in AI is being used: chat
-// registrations, what they did, who came back, starter cards, daily actives and spend.
+// registrations, what they did, who came back, starter cards, daily actives and spend, and
+// Xanadu Plus subscribers.
 // Counts only; nothing about what anyone asked.
 const ai = require('../lib/ai');
 const calls = require('../lib/calls');
@@ -46,8 +47,8 @@ module.exports = async (req, res) => {
     // A "registration" is an install that reached the chat screen once (the app calls
     // /api/ai-start there). Play Console is the source of truth for installs.
     const createdDay = `strftime('%Y-%m-%d', i.created_at / 1000, 'unixepoch')`;
-    const [month, regs, hist, daily, active, newByDay, opens, cards] = await ai.execute(
-      ['SELECT usd, calls, tasks FROM ai_spend WHERE month = ?', [T(ai.month(now))]],
+    const [month, regs, hist, daily, active, newByDay, opens, cards, plusNow, plusSubs] = await ai.execute(
+      ['SELECT usd, plus_usd, calls, tasks FROM ai_spend WHERE month = ?', [T(ai.month(now))]],
       [`SELECT COUNT(*) AS allTime,
           SUM(CASE WHEN i.created_at > ? THEN 1 ELSE 0 END) AS last24h,
           SUM(CASE WHEN i.created_at > ? THEN 1 ELSE 0 END) AS last7d,
@@ -72,7 +73,12 @@ module.exports = async (req, res) => {
       [`SELECT ${createdDay} AS created_day, COUNT(*) AS n FROM ai_installs i WHERE i.created_at > ? GROUP BY 1`,
         [I(now - 14 * 86_400_000)]],
       ['SELECT day, COUNT(*) AS n FROM ai_opens WHERE day >= ? GROUP BY day', [T(since)]],
-      ['SELECT day, card, n FROM ai_cards WHERE day >= ? ORDER BY day, card', [T(since)]]
+      ['SELECT day, card, n FROM ai_cards WHERE day >= ? ORDER BY day, card', [T(since)]],
+      [`SELECT COUNT(*) AS subscribers, SUM(CASE WHEN plus_month = ? THEN plus_tasks ELSE 0 END) AS tasksThisMonth
+        FROM ai_installs WHERE plus_until > ?`, [T(ai.month(now)), I(now)]],
+      [`SELECT COUNT(*) AS everSubscribed,
+          SUM(CASE WHEN state = 'SUBSCRIPTION_STATE_CANCELED' AND until > ? THEN 1 ELSE 0 END) AS cancelledStillPaid
+        FROM plus_subs`, [I(now)]]
     );
     const byDay = {};
     const slot = (d) => (byDay[d] ||= { day: d, newRegistrations: 0, opened: 0, usedAi: 0, tasks: 0, aiRequests: 0, usd: 0, cards: {} });
@@ -85,7 +91,9 @@ module.exports = async (req, res) => {
       slot(r.day).cards[r.card] = Number(r.n);
       cardTotals[r.card] = (cardTotals[r.card] || 0) + Number(r.n);
     }
-    const m = month[0] || { usd: 0, calls: 0, tasks: 0 };
+    const m = month[0] || { usd: 0, plus_usd: 0, calls: 0, tasks: 0 };
+    const usd = (v) => Number(Number(v || 0).toFixed(4));
+    const num = (row) => Object.fromEntries(Object.entries(row || {}).map(([k, v]) => [k, Number(v || 0)]));
     const reg = Object.fromEntries(Object.entries(regs[0] || {}).map(([k, v]) => [k, Number(v || 0)]));
     res.status(200).json({
       notes: {
@@ -93,9 +101,14 @@ module.exports = async (req, res) => {
         engagement: 'ownAsksOnly + cardsOnly + both + didNothing = allTime registrations. cardsSent counts card uses, not people.',
         returns: 'openedOnALaterDay needs app opens, recorded from the 0.2.3 server update on; earlier registrations only count from then.',
         cardsLast14Days: 'Starter cards sent, as daily totals per card (app 0.2.3+). Not linked to anyone.',
-        month: 'aiRequests are requests to the AI, not phone calls; phone calls are under calls.',
+        month: 'aiRequests are requests to the AI, not phone calls; phone calls are under calls. capUsd applies to freeSpendUsd only.',
+        plus: 'subscribers: installs with paid Plus time now. cancelledStillPaid: turned off renewal, paid time not over yet.',
       },
-      month: { spendUsd: Number(Number(m.usd).toFixed(4)), capUsd: ai.CONFIG.monthlyCapUsd, aiRequests: Number(m.calls), tasks: Number(m.tasks) },
+      month: {
+        spendUsd: usd(m.usd), freeSpendUsd: usd(m.usd - (m.plus_usd || 0)), plusSpendUsd: usd(m.plus_usd),
+        capUsd: ai.CONFIG.monthlyCapUsd, aiRequests: Number(m.calls), tasks: Number(m.tasks),
+      },
+      plus: { ...num(plusNow[0]), ...num(plusSubs[0]), tasksPerMonth: ai.CONFIG.plusTasksPerMonth, callsPerMonth: calls.CONFIG.plusCallsPerMonth },
       registrations: { allTime: reg.allTime, last24h: reg.last24h, last7d: reg.last7d, last14d: reg.last14d },
       engagement: {
         ownAsksOnly: reg.ownAsksOnly, cardsOnly: reg.cardsOnly, both: reg.both, didNothing: reg.didNothing,

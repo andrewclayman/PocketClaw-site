@@ -3,11 +3,14 @@
 //   ticket    app, Bearer token: takes one call and returns a one-use signed ticket for the calls server
 //   report    calls server, signed: how a ticketed call went; gives the call back if it never happened
 //   purchase  app (Play), Bearer install token + { productId, purchaseToken }: credits a pack, once
+//   subscribe app (Play), Bearer install token + { productId, purchaseToken }: puts Xanadu Plus on
+//             this install (lib/plus.js); sent after buying and again each time the app starts
 //   grant     admin, ?key=AI_ADMIN_KEY + { subject | token, calls }: adds (or removes) calls
 // One function for all of them: the Vercel plan caps how many functions a deployment can have.
 const crypto = require('crypto');
 const ai = require('../lib/ai');
 const calls = require('../lib/calls');
+const plus = require('../lib/plus');
 const { T, I } = ai;
 const R = (v) => ['real', v];
 
@@ -27,10 +30,11 @@ module.exports = async (req, res) => {
     await sweepStale(who.subject, Date.now());
     if (op === 'status') {
       const row = await calls.account(who.subject);
-      return res.status(200).json(calls.status(row, who.kind));
+      return res.status(200).json(calls.status(row, who));
     }
     if (op === 'ticket') return await ticket(req, res, who);
     if (op === 'purchase') return await purchase(req, res, who);
+    if (op === 'subscribe') return await subscribe(req, res, who);
     return fail(res, 404, 'not_found', 'Unknown op');
   } catch (e) {
     console.error(`calls ${op} failed`, e);
@@ -40,12 +44,14 @@ module.exports = async (req, res) => {
 
 /** The statement that puts one call back into the allowance it was taken from. */
 function giveBack(subject, source, month) {
-  return {
+  const back = {
     free: ['UPDATE call_accounts SET free_used = MAX(0, free_used - 1) WHERE subject = ?', [T(subject)]],
     credit: ['UPDATE call_accounts SET credits = credits + 1 WHERE subject = ?', [T(subject)]],
     licence: ['UPDATE call_accounts SET month_used = MAX(0, month_used - 1) WHERE subject = ? AND month = ?',
       [T(subject), T(month)]],
-  }[source];
+  };
+  back.plus = back.licence; // Plus calls are the month's calls too
+  return back[source];
 }
 
 // A ticket the calls server never reported on was never used: the app lost signal before it
@@ -71,7 +77,8 @@ async function ticket(req, res, who) {
     return fail(res, 429, 'daily_limit', 'daily_limit: That is the most calls for one day. Try again tomorrow.');
   }
 
-  // Take one call from the first allowance that has one: free, then the licence's month, then bought.
+  // Take one call from the first allowance that has one: free, then the month's (licence or
+  // Plus), then bought.
   const ipHash = ai.ipHash(req);
   let source = null;
   if (who.kind === 'install' && Number(row.free_used) < calls.CONFIG.freeCalls) {
@@ -92,14 +99,14 @@ async function ticket(req, res, who) {
       if (took.length) source = 'free';
     }
   }
-  if (!source && who.kind === 'licence') {
+  if (!source && calls.monthlyCalls(who) > 0) {
     // A new month starts the count again.
     const [took] = await ai.execute([
       `UPDATE call_accounts SET month_used = CASE WHEN month = ? THEN month_used + 1 ELSE 1 END, month = ?
        WHERE subject = ? AND (month <> ? OR month_used < ?) RETURNING month_used`,
-      [T(month), T(month), T(who.subject), T(month), I(calls.CONFIG.licenceCallsPerMonth)],
+      [T(month), T(month), T(who.subject), T(month), I(calls.monthlyCalls(who))],
     ]);
-    if (took.length) source = 'licence';
+    if (took.length) source = who.kind === 'licence' ? 'licence' : 'plus';
   }
   if (!source) {
     const [took] = await ai.execute([
@@ -109,10 +116,12 @@ async function ticket(req, res, who) {
     if (took.length) source = 'credit';
   }
   if (!source) {
-    const message = who.kind === 'install'
-      ? 'no_calls: There are no calls left on this phone. More calls can be bought in the app.'
-      : "no_calls: This month's calls are used up. They renew at the start of next month.";
-    return fail(res, 402, 'no_calls', message, calls.status(row, who.kind, now));
+    const message = who.kind === 'licence'
+      ? "no_calls: This month's calls are used up. They renew at the start of next month."
+      : who.plus
+        ? "no_calls: This month's Plus calls are used up. More calls can be bought in the app."
+        : 'no_calls: There are no calls left on this phone. More calls can be bought in the app.';
+    return fail(res, 402, 'no_calls', message, calls.status(row, who, now));
   }
 
   const nonce = crypto.randomBytes(16).toString('base64url');
@@ -130,7 +139,7 @@ async function ticket(req, res, who) {
       [T(month)]],
     ['SELECT * FROM call_accounts WHERE subject = ?', [T(who.subject)]]
   );
-  return res.status(200).json({ ticket: signed, source, ...calls.status(fresh[0], who.kind, now) });
+  return res.status(200).json({ ticket: signed, source, ...calls.status(fresh[0], who, now) });
 }
 
 async function report(req, res) {
@@ -180,7 +189,7 @@ async function purchase(req, res, who) {
   if (done) {
     // Already credited (the app retries until it has consumed the purchase); nothing more to add.
     if (done.subject !== who.subject) return fail(res, 409, 'other_account', 'This purchase belongs to another install.');
-    return res.status(200).json({ ok: true, credited: 0, ...calls.status(row, who.kind, now) });
+    return res.status(200).json({ ok: true, credited: 0, ...calls.status(row, who, now) });
   }
 
   let p;
@@ -205,7 +214,31 @@ async function purchase(req, res, who) {
     ['UPDATE call_accounts SET credits = credits + ? WHERE subject = ?', [I(inserted.length ? n : 0), T(who.subject)]],
     ['SELECT * FROM call_accounts WHERE subject = ?', [T(who.subject)]]
   );
-  return res.status(200).json({ ok: true, credited: inserted.length ? n : 0, ...calls.status(fresh[0], who.kind, now) });
+  return res.status(200).json({ ok: true, credited: inserted.length ? n : 0, ...calls.status(fresh[0], who, now) });
+}
+
+async function subscribe(req, res, who) {
+  if (who.kind !== 'install') return fail(res, 400, 'not_play', 'Subscriptions are for the Play version.');
+  if (!process.env.GOOGLE_PLAY_SERVICE_ACCOUNT) {
+    return fail(res, 503, 'not_configured', 'not_configured: Purchases are not set up on the server yet.');
+  }
+  const { productId, purchaseToken } = req.body || {};
+  if (!plus.PRODUCTS.includes(productId) || typeof purchaseToken !== 'string' || !purchaseToken) {
+    return fail(res, 400, 'bad_request', 'Unknown product or missing purchase token.');
+  }
+  const now = Date.now();
+  let got;
+  try {
+    got = await plus.link(who.subject.slice(2), purchaseToken, now);
+  } catch (e) {
+    if ([400, 404, 410].includes(e.status)) return fail(res, 400, 'invalid_purchase', 'Google Play does not recognise this subscription.');
+    throw e;
+  }
+  if (!got.productId) return fail(res, 400, 'invalid_purchase', 'That purchase is not Xanadu Plus.');
+  if (got.state === 'SUBSCRIPTION_STATE_PENDING') return fail(res, 409, 'pending', 'pending: The payment has not gone through yet.');
+  const active = got.until > now;
+  const row = await calls.account(who.subject, now);
+  return res.status(200).json({ ok: true, active, plusUntil: got.until || null, ...calls.status(row, { ...who, plus: active }, now) });
 }
 
 async function grant(req, res) {
@@ -222,5 +255,5 @@ async function grant(req, res) {
     ['UPDATE call_accounts SET credits = MAX(0, credits + ?) WHERE subject = ?', [I(n), T(who.subject)]],
     ['SELECT * FROM call_accounts WHERE subject = ?', [T(who.subject)]]
   );
-  return res.status(200).json({ subject: who.subject, ...calls.status(fresh[0], who.kind) });
+  return res.status(200).json({ subject: who.subject, ...calls.status(fresh[0], who) });
 }

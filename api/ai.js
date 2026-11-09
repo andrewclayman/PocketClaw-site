@@ -4,8 +4,10 @@
 // A "task" is a request whose last message is the user's: that is the start of one turn of
 // the app's agent loop. The tool-call follow-ups inside the turn (last message = tool results)
 // ride on that task, bounded in number and idle time. The model is picked here, from the
-// tier the app asks for, and the month's spend is capped across all installs.
+// tier the app asks for, and the month's free use is capped across all installs (Xanadu Plus,
+// lib/plus.js, has its own monthly tasks instead).
 const ai = require('../lib/ai');
+const plus = require('../lib/plus');
 const { T, I } = ai;
 
 const UPSTREAM = 'https://api.openai.com/v1/chat/completions';
@@ -19,6 +21,7 @@ const MESSAGES = {
   free_tasks_used: 'free_tasks_used: You have used all of your free tasks.',
   free_trial_ended: 'free_trial_ended: Your free week has ended.',
   free_tier_paused: 'free_tier_paused: The free AI has reached its limit for this month.',
+  plus_tasks_used: "plus_tasks_used: You've used this month's Plus tasks. They start again on the 1st.",
   busy: 'upstream_unavailable: The AI is busy right now. Try again in a moment.',
 };
 
@@ -52,20 +55,23 @@ module.exports = async (req, res) => {
   // Which starter card (app 0.2.3+). Counted as a daily total per card, never against the install.
   const cardHeader = String(req.headers['x-xanadu-card'] || '');
   const card = isNewTask && isStarter && /^[a-z0-9_]{1,32}$/.test(cardHeader) ? cardHeader : null;
-  let charged = null; // 'task' or 'starter': what this request took, to give back if it fails
+  let charged = null; // 'task', 'plus' or 'starter': what this request took, to give back if it fails
   let taskUsd = 0; // what this task has cost before this request
+  let isPlus = false;
 
   try {
     await ai.ensureSchema();
     const [rows, spendRows] = await ai.execute(
       ['SELECT * FROM ai_installs WHERE id = ?', [T(id)]],
-      ['SELECT usd FROM ai_spend WHERE month = ?', [T(ai.month(now))]]
+      ['SELECT usd, plus_usd FROM ai_spend WHERE month = ?', [T(ai.month(now))]]
     );
     const row = rows[0];
     if (!row) return fail(res, 401, 'invalid_token', 'invalid_token: This install is not registered for the free AI.');
     if (Number(row.blocked)) return fail(res, 403, 'blocked', 'This install has been blocked.');
-    const spend = spendRows.length ? Number(spendRows[0].usd) : 0;
-    if (spend >= ai.CONFIG.monthlyCapUsd) return fail(res, 503, 'free_tier_paused', MESSAGES.free_tier_paused);
+    isPlus = await plus.current(row, now);
+    // The cap is on free use: Plus is paid for, so it neither counts towards it nor stops at it.
+    const freeSpend = spendRows.length ? Number(spendRows[0].usd) - Number(spendRows[0].plus_usd || 0) : 0;
+    if (!isPlus && freeSpend >= ai.CONFIG.monthlyCapUsd) return fail(res, 503, 'free_tier_paused', MESSAGES.free_tier_paused);
 
     const dayCalls = row.day === today ? Number(row.day_calls) : 0;
     if (dayCalls >= ai.CONFIG.maxCallsPerDay) {
@@ -84,8 +90,19 @@ module.exports = async (req, res) => {
     }
     if (charged) {
       // taken as a starter above
+    } else if (isNewTask && isPlus) {
+      // A new month starts the count again.
+      const month = ai.month(now);
+      const [took] = await ai.execute([
+        `UPDATE ai_installs SET plus_tasks = CASE WHEN plus_month = ? THEN plus_tasks + 1 ELSE 1 END, plus_month = ?,
+           last_call_at = ?, task_calls = 1, task_usd = 0, day = ?, day_calls = ?
+         WHERE id = ? AND (plus_month <> ? OR plus_tasks < ?) RETURNING plus_tasks`,
+        [T(month), T(month), I(now), T(today), I(dayCalls + 1), T(id), T(month), I(ai.CONFIG.plusTasksPerMonth)],
+      ]);
+      if (!took.length) return fail(res, 402, 'plus_tasks_used', MESSAGES.plus_tasks_used);
+      charged = 'plus';
     } else if (isNewTask) {
-      const st = ai.status(row, spend, now);
+      const st = ai.status(row, freeSpend, now);
       if (st.expired) return fail(res, 402, 'free_trial_ended', MESSAGES.free_trial_ended);
       if (st.tasksLeft <= 0) return fail(res, 402, 'free_tasks_used', MESSAGES.free_tasks_used);
       // Conditional on the count so two simultaneous requests can't both take the last task.
@@ -191,7 +208,7 @@ module.exports = async (req, res) => {
   try {
     // The user got nothing for this task, so it doesn't count against them.
     if (!upstreamOk && charged) {
-      const col = charged === 'starter' ? 'starter_used' : 'tasks_used';
+      const col = { starter: 'starter_used', plus: 'plus_tasks', task: 'tasks_used' }[charged];
       await ai.execute([`UPDATE ai_installs SET ${col} = MAX(0, ${col} - 1) WHERE id = ?`, [T(id)]]);
     }
     // An aborted stream never reports usage; charge a rough estimate rather than nothing.
@@ -201,9 +218,10 @@ module.exports = async (req, res) => {
     const counted = charged && upstreamOk ? 1 : 0;
     await ai.execute(
       ['UPDATE ai_installs SET spend_usd = spend_usd + ?, task_usd = task_usd + ? WHERE id = ?', [['real', cost], ['real', cost], T(id)]],
-      [`INSERT INTO ai_spend (month, usd, calls, tasks) VALUES (?, ?, 1, ?)
-        ON CONFLICT(month) DO UPDATE SET usd = usd + excluded.usd, calls = calls + 1, tasks = tasks + excluded.tasks`,
-        [T(ai.month(now)), ['real', cost], I(counted)]],
+      [`INSERT INTO ai_spend (month, usd, calls, tasks, plus_usd) VALUES (?, ?, 1, ?, ?)
+        ON CONFLICT(month) DO UPDATE SET usd = usd + excluded.usd, calls = calls + 1, tasks = tasks + excluded.tasks,
+          plus_usd = plus_usd + excluded.plus_usd`,
+        [T(ai.month(now)), ['real', cost], I(counted), ['real', isPlus ? cost : 0]]],
       [`INSERT INTO ai_daily (day, usd, calls, tasks) VALUES (?, ?, 1, ?)
         ON CONFLICT(day) DO UPDATE SET usd = usd + excluded.usd, calls = calls + 1, tasks = tasks + excluded.tasks`,
         [T(today), ['real', cost], I(counted)]],

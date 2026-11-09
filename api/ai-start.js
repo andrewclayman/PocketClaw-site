@@ -1,9 +1,10 @@
 // POST /api/ai-start — the app's handshake for the free built-in AI.
 // Body: { token?, appVersion? }. With a valid install token it just reports that install's
-// free allowance; without one it registers a new install and returns its token. New installs
-// are capped per IP per day so one person can't reset the allowance by clearing app data.
+// allowance (free, or Xanadu Plus); without one it registers a new install and returns its token.
+// New installs are capped per IP per day so one person can't reset the allowance by clearing app data.
 const crypto = require('crypto');
 const ai = require('../lib/ai');
+const plus = require('../lib/plus');
 const { T, I } = ai;
 
 /** Notes that this install reached the chat screen today. A stats write; never fails the handshake. */
@@ -30,7 +31,8 @@ module.exports = async (req, res) => {
       const rows = await ai.query('SELECT * FROM ai_installs WHERE id = ?', [T(existing)]);
       if (rows.length) {
         await recordOpen(existing, now);
-        return res.status(200).json({ token: body.token, ...ai.status(rows[0], spend, now) });
+        const isPlus = await plus.current(rows[0], now);
+        return res.status(200).json({ token: body.token, ...ai.status(rows[0], spend, now, isPlus) });
       }
       // A valid token whose row is gone (wiped table): fall through and issue a fresh one.
     }
